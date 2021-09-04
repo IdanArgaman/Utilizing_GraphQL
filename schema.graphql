@@ -5,9 +5,20 @@ type Query {
   comments: [Comment!]!
 }
 
+enum MutationType {
+  CREATED
+  UPDATED
+  DELETE
+}
+
+type CommentSubscritpionPayload {
+  type: MutationType!
+  comment: Comment!
+}
+
 type Subscription {
   count: Int!
-  comment(postId: String!): Comment!
+  comment(postId: String!): CommentSubscritpionPayload!
 }
 
 type Mutation {

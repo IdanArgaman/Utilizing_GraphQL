@@ -72,7 +72,13 @@ const Mutation = {
         }
 
         db.comments.push(comment);
-        pubsub.publish(`comment_${data.postId}`, { comment });
+        pubsub.publish(`comment_${data.postId}`, 
+        { 
+          comment: {
+            type: "CREATED",
+            comment
+          } 
+        });
         return comment;
       }
 
