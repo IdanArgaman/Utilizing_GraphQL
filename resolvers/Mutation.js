@@ -1,20 +1,51 @@
+import bycrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
 const Mutation = {
-    createUser(parent, args, { db }) {
+    async createUser(parent, args, { db }) {
+      if(args.data.password.length < 6) {
+        throw new Error("Password must be at least 6 characters length");
+      }
+
       const emailTaken = db.users.some((user) => user.email === args.data.email);
       if (emailTaken) {
         throw new Error("Email taken");
       }
 
+      const password = await bycrypt.hash(args.data.password, 10);
+
       const user = {
         id: new Date().getTime(),
         ...args.data,
+        password
       };
 
       db.users.push(user);
 
-      return user;
+      return {
+        user,
+        token: jwt.sign({id: user.id}, 'secret')
+      }
     },
-    deleteUser(parenet, args, { db }) {
+    async login(parent, args, { db }) {
+      const user = db.users.find(user => user.email === args.data.email);
+
+      if(!user) {
+        throw new Error('Unable to login');
+      }
+
+      const isMatch = bycrypt.compare(args.data.password, user.password);
+
+      if(!isMatch) {
+        throw new Error('Unable to login');
+      }
+
+      return {
+        user,
+        token: jwt.sign({id: user.id}, 'secret')
+      }
+    },
+    deleteUser(parent, args, { db }) {
         const id = args.id;
         const user = db.users.find(user => user.id === id);
 
