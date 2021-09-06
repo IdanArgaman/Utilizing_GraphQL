@@ -1,5 +1,6 @@
 import bycrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import getUserId from '../utils/getUserId.js';
 
 const Mutation = {
     async createUser(parent, args, { db }) {
@@ -91,12 +92,15 @@ const Mutation = {
 
       return user;
     },
-    createComment(parenet, { data }, { db, pubsub }) {
-      const user = db.users.find(user => user.id === data.userId);
+    createComment(parent, { data }, { db, pubsub, request }) {
+      const userId = getUserId(request);
+
+      const user = db.users.find(user => user.id === userId);
       const post = db.posts.find(post => post.id === data.postId);
 
       if(user && post ) {
         const comment = {
+          id: new Date().getTime().toString(),
           userId: data.userId,
           postId: data.postId,
           title: data.title
